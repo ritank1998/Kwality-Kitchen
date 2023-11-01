@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com-->
+<html lang="en" dir="ltr">
+  <head>
+    <title>Register Here to Order Food..</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<title> Registration or Sign Up form in HTML CSS | CodingLab </title>-->
+    <link rel="stylesheet" href="css/style.css">
+   </head>
+<body>
+  <div class="wrapper">
+    <h2>The Kwality Kitchen</h2>
+    <form action="/registration" method="POST">
+      <div class="input-box">
+        <input name="fullName" type="text" placeholder="Enter your name" required id="full_name">
+      </div>
+      <div class="input-box">
+        <input name="email" type="text" placeholder="Enter your email" required id="email">
+      </div>
+      <div class="input-box">
+        <input name="number" type="number" placeholder="enter Your number" required id="number">
+      </div>
+      <div class="input-box">
+        <input name="password" type="password" placeholder="Create password" required id="password">
+      </div>
+      <div class="input-box">
+        <input name="confirm_password" type="password" placeholder="Confirm password" required id="confirm_password">
+      </div>
+      <div class="input-box">
+        <input name="address" type="Address" placeholder="Enter Your Complete Address" required id="address">
+      </div>
+     
+      <div class="policy">
+        <input type="checkbox" id="checkbox">
+        <h3>I accept all terms & condition</h3>
+      </div>
+      <div class="input-box button">
+        <input onclick="locate()" value="Location" type="button" name="location">
+      </div>
+      <div class="input-box button">
+        <input name="submit" type="Submit" value="Register Now">
+      </div>
+      <div class="text">
+        <h3>Already have an account? <a href="/loginindex">Login now</a></h3>
+      </div>
+    </form>
+  </div>
+</body>
+<script>
+  const locate = () =>{
+    if(navigator.geolocation){
+       // navigator.geolocation.getCurrentPosition((position)=>{
+                      navigator.geolocation.getCurrentPosition(showPosition,showError);
+                      
+        
+    }
+    else{
+        alert("Geolocation not supported");
+    }
+};
+
+const showPosition = (position)=>{
+    let lat = position.coords.latitude;
+    let long = position.coords.longitude;
+    const location = [lat , long]
+    console.log(location);
+    alert("Thank you Location Captured");
+}
+
+
+const showError = (error) =>{
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            alert("Your location is denied");
+            break;
+    
+        case error.POSITION_UNAVIALABLE:
+            alert("The geoPosition is not avialable");
+        
+        case error.RUNTIME_ERROR:
+            alert("RUN TIME ERROR");
+    }
+}
+</script>
+</html>
