@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-mongoose.connect("mongodb://127.0.0.1:27017/LoginList",{
+mongoose.connect("mongodb://127.0.0.1:27017/KwalityKitchen",{
     useNewUrlParser : true,
     useUnifiedTopology : true
 }).then(()=>{
@@ -8,3 +8,4 @@ mongoose.connect("mongodb://127.0.0.1:27017/LoginList",{
 //The connection of the express app , Nodejs and MongoDb database . The connection is made using the 
 //require method in the main index file of the App.
 //<!-------------Created By Ritank Saxena------------->
+

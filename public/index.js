@@ -10,10 +10,12 @@ const multer = require("multer")
 const port = process.env.PORT || 3000 // declaring the port which will be used for the session
 const app = express()
 const cookieParser = require("cookie-parser") //works as a middleware
+
+
 require("../db/conn") //importing the connection method with MongoDb databse
-require("../successfulOrders/db/connections")
+//require("../successfulOrders/db/connections")
 const registeredUsers = require("../models/loginSchema") //importing the database schema
-const paymentConfirm = require("../successfulOrders/models/schema")
+//const paymentConfirm = require("../successfulOrders/models/schema")
 
 
 
@@ -156,7 +158,7 @@ const vegCurries = db1.model("vegcurries", mongoose.Schema({
     },
     images: {
         data: Buffer,
-        contentType: String
+        ContentType: String
     },
 
 }))
@@ -169,7 +171,7 @@ const nonvegCurries = db2.model("nonvegcurries", mongoose.Schema({
     },
     images: {
         data: Buffer,
-        contentType: String
+        ContentType: String
     },
 
 }))
@@ -183,7 +185,7 @@ const Starters = db3.model("Starters", mongoose.Schema({
     },
     images: {
         data: Buffer,
-        contentType: String
+        ContentType: String
     },
 
 }))
@@ -197,7 +199,7 @@ const Salad = db4.model("Salad", mongoose.Schema({
     },
     images: {
         data: Buffer,
-        contentType: String
+        ContentType: String
     },
 
 }))
@@ -211,7 +213,7 @@ const RiceItems = db5.model("RiceItems", mongoose.Schema({
     },
     images: {
         data: Buffer,
-        contentType: String
+        ContentType: String
     },
 
 }))
@@ -266,6 +268,7 @@ app.post("/nonvegcurry", (req, res) => {
                     contentType: 'image/jpg'
                 },
                 price: req.body.Price
+                
             })
 
             newImage.save()
