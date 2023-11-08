@@ -9,8 +9,10 @@ const jwt = require("jsonwebtoken") // importing Jason web token
 const multer = require("multer")
 const port = process.env.PORT || 3000 // declaring the port which will be used for the session
 const app = express()
+const circulaJson = require("circular-json")
+const novu = require("@novu/node")
 const cookieParser = require("cookie-parser") //works as a middleware
-
+const NOVU_API = '5a81b3ea5f716a12e4224205bbf4dcd1'
 
 require("../db/conn") //importing the connection method with MongoDb databse
 //require("../successfulOrders/db/connections")
@@ -52,6 +54,7 @@ app.get("/loginindex", (req, res) => {
 })
 
 //this is the registration of the new user using the signup page
+
 app.post("/registration", async (req, res) => {
     try {
 
@@ -71,10 +74,8 @@ app.post("/registration", async (req, res) => {
                 address: req.body.address,
                 location: req.body.location
             })
-            console.log(locate)
             //token generation using the new method defined on the database schema
             const Token = await newRegisteredUser.generateAuthenticationToken();
-            console.log(`this is registration vala ${Token}`)
 
             //cookie is a inbuilt feature of the Nodejs . can be used directly.
             res.cookie("jwt", Token, {
@@ -82,9 +83,11 @@ app.post("/registration", async (req, res) => {
                 httpOnly: true
             })
 
-            //console.log(`this is the cookie generated ${res.cookie.jwt}`)
+            
             //the costomer variable is created to store the data on the database 
+
             const costomer = await newRegisteredUser.save()
+            
             res.status(201).render("indexAppPage")
 
         }
@@ -93,10 +96,14 @@ app.post("/registration", async (req, res) => {
             res.send("Re-Enter the Password....")
         }
     } catch (e) {
-        console.log(e)
-        res.status(400).send("Encounterd an Error")
+        
+        res.status(500).json(circulaJson.stringify({message: error.message}))
     }
 })
+
+
+
+
 
 //this is the login of the existing user using the login page using the POST method
 app.post("/loginindex", async (req, res) => {
@@ -115,7 +122,6 @@ app.post("/loginindex", async (req, res) => {
             expires: new Date(Date.now() + 3000),
             httpOnly: true
         })
-        console.log(`this is login ke time vala ${Token}`)
         //cookie is an inbuilt feature
         if (userEmail.password === pass) {
             res.status(400).render("indexAppPage")
@@ -131,7 +137,6 @@ app.post("/loginindex", async (req, res) => {
 //displaying the Menu card using the get method
 app.get("/Menu", (req, res) => {
     //requesting the cookie generating on login or sign to verify the user
-    console.log(`this is secret cookie ${req.cookies.jwt}`)
     res.render("Menuindex")
 })
 
@@ -147,7 +152,7 @@ const db2 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 const db3 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 const db4 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 const db5 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
-
+const db6 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 
 //Menu Items Validation is here
 //Veg Curry
@@ -218,6 +223,19 @@ const RiceItems = db5.model("RiceItems", mongoose.Schema({
 
 }))
 
+
+
+//Tandoor
+const TandoorItems = db6.model("Tondoor" , mongoose.Schema({
+    Name: {
+        type: String,
+        required: true
+    },
+    image: {
+        data:Buffer,
+        contentType: String
+    }
+}))
 //Multer Functions to upload the images 
 
 const storage = multer.diskStorage({
@@ -236,7 +254,7 @@ const upload = multer({
 app.post("/vegcurry", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(err)
+            res.status(500).json(circulaJson.stringify({message : err.message}))
         } else {
             const newImage = new vegCurries({
                 Name: req.body.name,
@@ -249,7 +267,7 @@ app.post("/vegcurry", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => console.log(err))
+                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
         }
     })
 })
@@ -259,7 +277,7 @@ app.post("/vegcurry", (req, res) => {
 app.post("/nonvegcurry", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(err)
+            res.status(500).json(circulaJson.stringify({message : err.message}))
         } else {
             const newImage = new nonvegCurries({
                 Name: req.body.name,
@@ -268,12 +286,12 @@ app.post("/nonvegcurry", (req, res) => {
                     contentType: 'image/jpg'
                 },
                 price: req.body.Price
-                
+
             })
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => console.log(err))
+                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
         }
     })
 })
@@ -283,7 +301,7 @@ app.post("/nonvegcurry", (req, res) => {
 app.post("/starter", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(err)
+            res.status(500).json(circulaJson.stringify({message : err.message}))
         } else {
             const newImage = new Starters({
                 Name: req.body.name,
@@ -296,7 +314,7 @@ app.post("/starter", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => console.log(err))
+                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
         }
     })
 })
@@ -306,7 +324,7 @@ app.post("/starter", (req, res) => {
 app.post("/salad", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(err)
+            res.status(500).json(circulaJson.stringify({message : err.message}))
         } else {
             const newImage = new Salad({
                 Name: req.body.name,
@@ -319,7 +337,7 @@ app.post("/salad", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => console.log(err))
+                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
         }
     })
 })
@@ -329,7 +347,7 @@ app.post("/salad", (req, res) => {
 app.post("/rice", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(err)
+            res.status(500).json(circulaJson.stringify({message : err.message}))
         } else {
             const newImage = new RiceItems({
                 Name: req.body.name,
@@ -342,16 +360,99 @@ app.post("/rice", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => console.log(err))
+                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
         }
     })
 })
 
+//Tandoor
+app.post("/tandoor" , (req,res)=>{
+    upload(req, res,(err)=>{
+        if(err){
+            res.status(500).json(circulaJson.stringify({message: error.message}))
+        }
+        else{
+            const newImage = new TandoorItems({
+                Name: req.body.name,
+                image: {
+                    data: req.file.filename,
+                    contentType: 'image/jpg'
+                },
+                price: req.body.Price
+            })
+            newImage.save()
+            .then(()=> res.status(200).send("Images Updated"))
+            .catch((err)=> res.status(500).json(circulaJson.stringify({message : err.message})))
+        }
+    })
+})
 
+//Getting DB Data
 
+//vegCurries
+app.get("/vegcurries", async (req, res) => {
+    const data = await vegCurries.find()
+    try {
+        res.status(200).send(data)
+    } catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
 
+//nonVeg Currie
+app.get("/nonvegcurries", async (req, res) => {
+    const data = await nonvegCurries.find()
+    try {
 
+        res.status(200).send(data)
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
 
+//Rice items
+app.get("/riceitems", async (req, res) => {
+    const data = await RiceItems.find()
+    try {
+        res.status(200).send(data)
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
+
+//tandoor
+app.get("/tandoor", async(req,res)=>{
+    const data = await TandoorItems.find()
+    try{
+        res.status(200).send(data)
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }   
+    
+})
+//Salads
+app.get("/salad" , async(req,res)=>{
+    const data = await Salad.find()
+    try{
+        res.status(200).send(data)
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
+//Starters
+app.get("/starter" , async(req,res)=>{
+    const data = await Starters.find()
+    try{
+        res.status(200).send(data)
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
 
 
 //running the app on server
