@@ -10,7 +10,7 @@ const multer = require("multer")
 const port = process.env.PORT || 3000 // declaring the port which will be used for the session
 const app = express()
 const circulaJson = require("circular-json")
-const novu = require("@novu/node")
+const sub = require("@novu/node")
 const cookieParser = require("cookie-parser") //works as a middleware
 const NOVU_API = '5a81b3ea5f716a12e4224205bbf4dcd1'
 
@@ -74,6 +74,34 @@ app.post("/registration", async (req, res) => {
                 address: req.body.address,
                 location: req.body.location
             })
+            //genertating the novu subscriber and sending the email of activation if the account
+            const novu = new sub.Novu(NOVU_API)
+            {
+                try {
+                    await novu.subscribers.identify("2", {
+                        email: req.body.email,
+                        phone: req.body.number,
+                        firstName: req.body.fullName,
+                    });
+                    novu.trigger('account-activation', {
+                        to: {
+                            subscriberId: 2,
+                            email: req.body.email
+                        },
+                        payload: {
+                            confirmationLink: '<REPLACE_WITH_DATA>'
+                        }
+                    });
+
+
+                }
+                catch (error) {
+                    res.status(500).json(circulaJson.stringify({ message: error.message }))
+                }
+            }
+            const costomer = await newRegisteredUser.save()
+            const mySubs = registeredUsers.count()
+
             //token generation using the new method defined on the database schema
             const Token = await newRegisteredUser.generateAuthenticationToken();
 
@@ -83,11 +111,10 @@ app.post("/registration", async (req, res) => {
                 httpOnly: true
             })
 
-            
+
             //the costomer variable is created to store the data on the database 
 
-            const costomer = await newRegisteredUser.save()
-            
+
             res.status(201).render("indexAppPage")
 
         }
@@ -95,13 +122,22 @@ app.post("/registration", async (req, res) => {
         else {
             res.send("Re-Enter the Password....")
         }
-    } catch (e) {
-        
-        res.status(500).json(circulaJson.stringify({message: error.message}))
+    } catch (error) {
+
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
     }
 })
 
-
+app.delete("/subs", async (req, res) => {
+    try {
+        const novu = new sub.Novu(NOVU_API)
+        await novu.subscribers.delete('2');
+        res.send("Ho gya")
+    }
+    catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
+    }
+})
 
 
 
@@ -165,6 +201,10 @@ const vegCurries = db1.model("vegcurries", mongoose.Schema({
         data: Buffer,
         ContentType: String
     },
+    price: {
+        type: Number,
+        required: true
+    }
 
 }))
 
@@ -178,6 +218,10 @@ const nonvegCurries = db2.model("nonvegcurries", mongoose.Schema({
         data: Buffer,
         ContentType: String
     },
+    price: {
+        type: Number,
+        required: true
+    }
 
 }))
 
@@ -192,6 +236,10 @@ const Starters = db3.model("Starters", mongoose.Schema({
         data: Buffer,
         ContentType: String
     },
+    price: {
+        type: Number,
+        required: true
+    }
 
 }))
 
@@ -206,6 +254,10 @@ const Salad = db4.model("Salad", mongoose.Schema({
         data: Buffer,
         ContentType: String
     },
+    price: {
+        type: Number,
+        required: true
+    }
 
 }))
 
@@ -220,20 +272,28 @@ const RiceItems = db5.model("RiceItems", mongoose.Schema({
         data: Buffer,
         ContentType: String
     },
+    price: {
+        type: Number,
+        required: true
+    }
 
 }))
 
 
 
 //Tandoor
-const TandoorItems = db6.model("Tondoor" , mongoose.Schema({
+const TandoorItems = db6.model("Tondoor", mongoose.Schema({
     Name: {
         type: String,
         required: true
     },
     image: {
-        data:Buffer,
+        data: Buffer,
         contentType: String
+    },
+    price: {
+        type: Number,
+        required:true
     }
 }))
 //Multer Functions to upload the images 
@@ -254,7 +314,7 @@ const upload = multer({
 app.post("/vegcurry", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(500).json(circulaJson.stringify({message : err.message}))
+            res.status(500).json(circulaJson.stringify({ message: err.message }))
         } else {
             const newImage = new vegCurries({
                 Name: req.body.name,
@@ -267,7 +327,7 @@ app.post("/vegcurry", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
@@ -277,7 +337,7 @@ app.post("/vegcurry", (req, res) => {
 app.post("/nonvegcurry", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(500).json(circulaJson.stringify({message : err.message}))
+            res.status(500).json(circulaJson.stringify({ message: err.message }))
         } else {
             const newImage = new nonvegCurries({
                 Name: req.body.name,
@@ -291,7 +351,7 @@ app.post("/nonvegcurry", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
@@ -301,7 +361,7 @@ app.post("/nonvegcurry", (req, res) => {
 app.post("/starter", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(500).json(circulaJson.stringify({message : err.message}))
+            res.status(500).json(circulaJson.stringify({ message: err.message }))
         } else {
             const newImage = new Starters({
                 Name: req.body.name,
@@ -314,7 +374,7 @@ app.post("/starter", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
@@ -324,7 +384,7 @@ app.post("/starter", (req, res) => {
 app.post("/salad", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(500).json(circulaJson.stringify({message : err.message}))
+            res.status(500).json(circulaJson.stringify({ message: err.message }))
         } else {
             const newImage = new Salad({
                 Name: req.body.name,
@@ -337,7 +397,7 @@ app.post("/salad", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
@@ -347,7 +407,7 @@ app.post("/salad", (req, res) => {
 app.post("/rice", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(500).json(circulaJson.stringify({message : err.message}))
+            res.status(500).json(circulaJson.stringify({ message: err.message }))
         } else {
             const newImage = new RiceItems({
                 Name: req.body.name,
@@ -360,18 +420,18 @@ app.post("/rice", (req, res) => {
 
             newImage.save()
                 .then(() => res.status(200).send("Image Uploaded"))
-                .catch((err) => res.status(500).json(circulaJson.stringify({message : err.message})))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
 
 //Tandoor
-app.post("/tandoor" , (req,res)=>{
-    upload(req, res,(err)=>{
-        if(err){
-            res.status(500).json(circulaJson.stringify({message: error.message}))
+app.post("/tandoor", (req, res) => {
+    upload(req, res, (err) => {
+        if (err) {
+            res.status(500).json(circulaJson.stringify({ message: error.message }))
         }
-        else{
+        else {
             const newImage = new TandoorItems({
                 Name: req.body.name,
                 image: {
@@ -381,8 +441,8 @@ app.post("/tandoor" , (req,res)=>{
                 price: req.body.Price
             })
             newImage.save()
-            .then(()=> res.status(200).send("Images Updated"))
-            .catch((err)=> res.status(500).json(circulaJson.stringify({message : err.message})))
+                .then(() => res.status(200).send("Images Updated"))
+                .catch((err) => res.status(500).json(circulaJson.stringify({ message: err.message })))
         }
     })
 })
@@ -423,30 +483,32 @@ app.get("/riceitems", async (req, res) => {
 })
 
 //tandoor
-app.get("/tandoor", async(req,res)=>{
+app.get("/tandoor", async (req, res) => {
     const data = await TandoorItems.find()
-    try{
+    try {
         res.status(200).send(data)
     }
     catch (error) {
         res.status(500).json(circulaJson.stringify({ message: error.message }))
-    }   
-    
+    }
+
 })
+
 //Salads
-app.get("/salad" , async(req,res)=>{
+app.get("/salad", async (req, res) => {
     const data = await Salad.find()
-    try{
+    try {
         res.status(200).send(data)
     }
     catch (error) {
         res.status(500).json(circulaJson.stringify({ message: error.message }))
     }
 })
+
 //Starters
-app.get("/starter" , async(req,res)=>{
+app.get("/starter", async (req, res) => {
     const data = await Starters.find()
-    try{
+    try {
         res.status(200).send(data)
     }
     catch (error) {
