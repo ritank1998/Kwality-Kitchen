@@ -99,17 +99,17 @@ app.post("/registration", async (req, res) => {
                     res.status(500).json(circulaJson.stringify({ message: error.message }))
                 }
             }
-            const costomer = await newRegisteredUser.save()
-            const mySubs = registeredUsers.count()
-
+            
             //token generation using the new method defined on the database schema
             const Token = await newRegisteredUser.generateAuthenticationToken();
+            const costomer = await newRegisteredUser.save()
 
             //cookie is a inbuilt feature of the Nodejs . can be used directly.
             res.cookie("jwt", Token, {
                 expires: new Date(Date.now() + 70000),
                 httpOnly: true
             })
+            console.log(Token)
 
 
             //the costomer variable is created to store the data on the database 
@@ -182,6 +182,28 @@ app.get("/dashboard", (req, res) => {
     res.render("dashboardindex")
 })
 
+
+//tiffin services
+app.get("/tiffin", (req,res)=>{
+    res.render("tiffinindex")
+})
+
+app.post("/options" , (req,res)=>{
+    var ele = document.myform.plan.value;
+    console.log(ele);
+    alert("You have select the "+" "+ ele +" "+ "Plan");
+    if(ele == "Monthly"){
+        res.status(200).send("monthly" , "_self");
+        
+    }
+    else if(ele == "daily"){
+        alert("welcome daily");
+    }
+    else{
+        res.status(200).send("weekindex" , "_self");
+        
+    }
+})
 //Menu Card Database is here
 const db1 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 const db2 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
