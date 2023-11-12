@@ -47,6 +47,9 @@ tokens: [{
 }]
 })
 
+
+
+
 //token generation and authentication for the users while signing up using the middleware.
 users.methods.generateAuthenticationToken = async function() {
     try{

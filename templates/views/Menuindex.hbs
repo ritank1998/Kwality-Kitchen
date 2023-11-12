@@ -91,6 +91,8 @@ addtocartbtnDom.forEach(addtocartbtnDom => {
       quantity: 1
    };
 
+fetch('http://localhost:3000/vegcurries').then((res)=>res.json()).then((data)=>console.log(data))
+
 const IsinCart = cart.filter(cartItem => cartItem.name === product.name).length > 0;
 if (IsinCart === false) {
   cartDom.insertAdjacentHTML("beforeend",`

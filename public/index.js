@@ -52,7 +52,15 @@ app.get("/registration", (req, res) => {
 app.get("/loginindex", (req, res) => {
     res.render("loginindex")
 })
-
+//Counting the total number of the Users in the data base to set the subscribers in novu
+app.get("/users" , async(req,res)=>{
+    try{
+     const myUsers = await registeredUsers.find()
+     res.status(200).send(myUsers)
+    }catch(error){
+        res.status(500).json(circulaJson.stringify({message: error.message}))
+    }
+})
 //this is the registration of the new user using the signup page
 
 app.post("/registration", async (req, res) => {
@@ -78,14 +86,14 @@ app.post("/registration", async (req, res) => {
             const novu = new sub.Novu(NOVU_API)
             {
                 try {
-                    await novu.subscribers.identify("2", {
+                    await novu.subscribers.identify(`${req.body.fullName}_${req.body.email}`, {
                         email: req.body.email,
                         phone: req.body.number,
                         firstName: req.body.fullName,
                     });
                     novu.trigger('account-activation', {
                         to: {
-                            subscriberId: 2,
+                            subscriberId: `${req.body.fullName}_${req.body.email}`,
                             email: req.body.email
                         },
                         payload: {
@@ -115,7 +123,7 @@ app.post("/registration", async (req, res) => {
             //the costomer variable is created to store the data on the database 
 
 
-            res.status(201).render("indexAppPage")
+            res.status(200).render("indexAppPage")
 
         }
 
@@ -131,7 +139,7 @@ app.post("/registration", async (req, res) => {
 app.delete("/subs", async (req, res) => {
     try {
         const novu = new sub.Novu(NOVU_API)
-        await novu.subscribers.delete('2');
+        await novu.subscribers.delete('Ritank Saxena_saxena.ritank@gmail.com');
         res.send("Ho gya")
     }
     catch (error) {
@@ -214,37 +222,35 @@ const db6 = mongoose.createConnection("mongodb://127.0.0.1:27017/MenuCard")
 
 //Menu Items Validation is here
 //Veg Curry
-const vegCurries = db1.model("vegcurries", mongoose.Schema({
+const vegCurries = db1.model("vegCurries", mongoose.Schema({
     Name: {
         type: String,
         required: true
     },
-    images: {
+    image: {
         data: Buffer,
-        ContentType: String
+        contentType: String
     },
     price: {
         type: Number,
-        required: true
+        required:true
     }
-
 }))
 
 //Non Veg Curry
-const nonvegCurries = db2.model("nonvegcurries", mongoose.Schema({
+const nonvegCurries = db2.model("nonvegCurries", mongoose.Schema({
     Name: {
         type: String,
         required: true
     },
-    images: {
+    image: {
         data: Buffer,
-        ContentType: String
+        contentType: String
     },
     price: {
         type: Number,
-        required: true
+        required:true
     }
-
 }))
 
 
@@ -254,15 +260,14 @@ const Starters = db3.model("Starters", mongoose.Schema({
         type: String,
         required: true
     },
-    images: {
+    image: {
         data: Buffer,
-        ContentType: String
+        contentType: String
     },
     price: {
         type: Number,
-        required: true
+        required:true
     }
-
 }))
 
 
@@ -272,15 +277,14 @@ const Salad = db4.model("Salad", mongoose.Schema({
         type: String,
         required: true
     },
-    images: {
+    image: {
         data: Buffer,
-        ContentType: String
+        contentType: String
     },
     price: {
         type: Number,
-        required: true
+        required:true
     }
-
 }))
 
 
@@ -290,13 +294,13 @@ const RiceItems = db5.model("RiceItems", mongoose.Schema({
         type: String,
         required: true
     },
-    images: {
+    image: {
         data: Buffer,
-        ContentType: String
+        contentType: String
     },
     price: {
         type: Number,
-        required: true
+        required:true
     }
 
 }))
@@ -368,7 +372,6 @@ app.post("/nonvegcurry", (req, res) => {
                     contentType: 'image/jpg'
                 },
                 price: req.body.Price
-
             })
 
             newImage.save()
@@ -450,7 +453,7 @@ app.post("/rice", (req, res) => {
 //Tandoor
 app.post("/tandoor", (req, res) => {
     upload(req, res, (err) => {
-        if (err) {
+        if (error) {
             res.status(500).json(circulaJson.stringify({ message: error.message }))
         }
         else {
