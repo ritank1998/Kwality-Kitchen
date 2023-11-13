@@ -13,6 +13,7 @@ const circulaJson = require("circular-json")
 const sub = require("@novu/node")
 const cookieParser = require("cookie-parser") //works as a middleware
 const NOVU_API = '5a81b3ea5f716a12e4224205bbf4dcd1'
+const axios = require("axios")
 
 require("../db/conn") //importing the connection method with MongoDb databse
 //require("../successfulOrders/db/connections")
@@ -53,12 +54,12 @@ app.get("/loginindex", (req, res) => {
     res.render("loginindex")
 })
 //Counting the total number of the Users in the data base to set the subscribers in novu
-app.get("/users" , async(req,res)=>{
-    try{
-     const myUsers = await registeredUsers.find()
-     res.status(200).send(myUsers)
-    }catch(error){
-        res.status(500).json(circulaJson.stringify({message: error.message}))
+app.get("/users", async (req, res) => {
+    try {
+        const myUsers = await registeredUsers.find()
+        res.status(200).send(myUsers)
+    } catch (error) {
+        res.status(500).json(circulaJson.stringify({ message: error.message }))
     }
 })
 //this is the registration of the new user using the signup page
@@ -86,14 +87,14 @@ app.post("/registration", async (req, res) => {
             const novu = new sub.Novu(NOVU_API)
             {
                 try {
-                    await novu.subscribers.identify(`${req.body.fullName}_${req.body.email}`, {
+                    await novu.subscribers.identify(`${req.body.email}`, {
                         email: req.body.email,
                         phone: req.body.number,
                         firstName: req.body.fullName,
                     });
                     novu.trigger('account-activation', {
                         to: {
-                            subscriberId: `${req.body.fullName}_${req.body.email}`,
+                            subscriberId: `${req.body.email}`,
                             email: req.body.email
                         },
                         payload: {
@@ -107,7 +108,7 @@ app.post("/registration", async (req, res) => {
                     res.status(500).json(circulaJson.stringify({ message: error.message }))
                 }
             }
-            
+
             //token generation using the new method defined on the database schema
             const Token = await newRegisteredUser.generateAuthenticationToken();
             const costomer = await newRegisteredUser.save()
@@ -192,24 +193,24 @@ app.get("/dashboard", (req, res) => {
 
 
 //tiffin services
-app.get("/tiffin", (req,res)=>{
+app.get("/tiffin", (req, res) => {
     res.render("tiffinindex")
 })
 
-app.post("/options" , (req,res)=>{
+app.post("/options", (req, res) => {
     var ele = document.myform.plan.value;
     console.log(ele);
-    alert("You have select the "+" "+ ele +" "+ "Plan");
-    if(ele == "Monthly"){
-        res.status(200).send("monthly" , "_self");
-        
+    alert("You have select the " + " " + ele + " " + "Plan");
+    if (ele == "Monthly") {
+        res.status(200).send("monthly", "_self");
+
     }
-    else if(ele == "daily"){
+    else if (ele == "daily") {
         alert("welcome daily");
     }
-    else{
-        res.status(200).send("weekindex" , "_self");
-        
+    else {
+        res.status(200).send("weekindex", "_self");
+
     }
 })
 //Menu Card Database is here
@@ -233,7 +234,7 @@ const vegCurries = db1.model("vegCurries", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 }))
 
@@ -249,7 +250,7 @@ const nonvegCurries = db2.model("nonvegCurries", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 }))
 
@@ -266,7 +267,7 @@ const Starters = db3.model("Starters", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 }))
 
@@ -283,7 +284,7 @@ const Salad = db4.model("Salad", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 }))
 
@@ -300,7 +301,7 @@ const RiceItems = db5.model("RiceItems", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 
 }))
@@ -319,7 +320,7 @@ const TandoorItems = db6.model("Tondoor", mongoose.Schema({
     },
     price: {
         type: Number,
-        required:true
+        required: true
     }
 }))
 //Multer Functions to upload the images 
@@ -452,7 +453,7 @@ app.post("/rice", (req, res) => {
 
 //Tandoor
 app.post("/tandoor", (req, res) => {
-    upload(req, res, (err) => {
+    upload(req, res, (error) => {
         if (error) {
             res.status(500).json(circulaJson.stringify({ message: error.message }))
         }
@@ -540,6 +541,9 @@ app.get("/starter", async (req, res) => {
         res.status(500).json(circulaJson.stringify({ message: error.message }))
     }
 })
+//Payment Gateway
+
+
 
 
 //running the app on server
