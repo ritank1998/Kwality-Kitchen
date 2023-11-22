@@ -14,6 +14,9 @@ const sub = require("@novu/node")
 const cookieParser = require("cookie-parser") //works as a middleware
 const NOVU_API = '5a81b3ea5f716a12e4224205bbf4dcd1'
 const axios = require("axios")
+const stripe = require("stripe")
+const CircularJSON = require("circular-json")
+const STRIPE_KEY = "sk_test_51OFL9qSEugCzyQa356HYQlT2ET8AmGww8bxPJCJ1Hgp0PL2wktB35JDHaRHbx5WLhIOvCfKMjToNNE7MBw3QmqAE00yklYxLwM"
 
 require("../db/conn") //importing the connection method with MongoDb databse
 //require("../successfulOrders/db/connections")
@@ -542,7 +545,45 @@ app.get("/starter", async (req, res) => {
     }
 })
 //Payment Gateway
-
+app.post("/stripe/pay" , async(req,res)=>{
+    const strPay = stripe(STRIPE_KEY)
+    
+    try{
+        const {
+            name,
+            unit_amount,
+            currency,
+            quantity
+        } = req.body
+        const product = await strPay.products.create({
+            name,
+        });
+        const productId = product.id
+        console.log(productId)
+        const final_amt = unit_amount*100
+        const price = await strPay.prices.create({
+            product: productId, // ID of the product created in the previous step
+            unit_amount: final_amt, // amount in cents
+            currency,
+        });
+        const priceId = price.id
+        console.log(priceId)
+        const session = await strPay.checkout.sessions.create({
+            success_url: 'https://www.google.com',
+            line_items: [
+                {
+                    price: priceId,
+                    quantity
+                },
+            ],
+            mode: 'payment',
+        });
+        res.status(200).json(CircularJSON.stringify({session}))
+    }
+    catch(error){
+        res.status(500).json(CircularJSON.stringify({message :error.message}))
+    }
+})
 
 
 

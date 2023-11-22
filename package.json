@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@novu/node": "^0.21.0",
+    "api": "^6.1.1",
     "axios": "^1.6.1",
     "circular-json": "^0.5.9",
     "cookie-parser": "^1.4.6",
@@ -26,6 +27,7 @@
     "mongoose": "^7.5.0",
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.1",
-    "novu": "^0.21.0"
+    "novu": "^0.21.0",
+    "stripe": "^14.5.0"
   }
 }
